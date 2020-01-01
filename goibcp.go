@@ -3,6 +3,7 @@ package goibcp
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -16,6 +17,7 @@ const (
 	ERROR   = 0
 	WARNING = 1
 	INFO    = 2
+	DEBUG   = 3
 )
 
 //Config to connect to CP Web gateway
@@ -27,7 +29,7 @@ type Config struct {
 }
 
 //Settings - Default settings if no setting are provided to the Connect() function.
-var Settings = &Config{CPURL: "https://localhost:5000", LogLevel: 2}
+var Settings = &Config{CPURL: "https://localhost:5000", LogLevel: 2, AutoTickle: true}
 
 //Client - IB Client which can be used to call all api functions
 var Client IBClient
@@ -48,6 +50,10 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 		if userSettings[0].LogLevel != 2 {
 			Settings.LogLevel = userSettings[0].LogLevel
 		}
+		if userSettings[0].AutoTickle == false { // default is true, but if user provides false the set autotickle to false.
+			Settings.AutoTickle = userSettings[0].AutoTickle
+		}
+
 	}
 
 	//ValidateSSO
@@ -78,6 +84,9 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 			time.Sleep(3 * time.Second)
 			continue
 		} else {
+			if Settings.AutoTickle == true {
+				go AutoTickle(&Client)
+			}
 			//TODO: trigger auto tickle
 			return &Client, nil
 		}
@@ -91,11 +100,6 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 func (c *IBClient) trickle() {
 	fmt.Println("Trickling...")
 
-}
-
-//Logout the IB client
-func (c *IBClient) Logout() error {
-	return c.GetEndpoint("sessionLogout", &c)
 }
 
 //PlaceOrder - posts and order
@@ -138,4 +142,66 @@ func (c *IBClient) GetSelectedAccount() (string, error) {
 		return "", err
 	}
 	return tradeAccount.SelectedAccount, nil
+}
+
+//GetPortfolioAccount - Gets the portfolio
+//TODO: gets only a single account , may not work for multiple accounts
+func (c *IBClient) GetPortfolioAccount() (string, error) {
+	var portfolioAccounts IBPortfolioAccounts
+	err := c.GetEndpoint("portfolioAccounts", &portfolioAccounts)
+	if err != nil {
+		logMsg(ERROR, "GetPortfolioAccount", "Could not get portfolio account ", err)
+		return "", err
+	}
+	return portfolioAccounts[0].AccountID, nil
+}
+
+//GetPortfolioPositions - Get current open positions for an account
+//Its required to call portfolio accounts before getting open positions, so account would be determined based on 1st account in portfolio accounts
+//TODO: may not work for multiple accounts/subaccounts situations
+func (c *IBClient) GetPortfolioPositions(openPositions *IBPortfolioPositions, pageID int) error {
+	accountID, err := c.GetPortfolioAccount()
+	if err != nil {
+		logMsg(ERROR, "GetPortfolioPositions", "Could not get portfolio account ", err)
+		return err
+	}
+	epURL := Settings.CPURL + endpoints["portfolioPositions"]
+	req := rClient.R().SetPathParams(map[string]string{"accountId": accountID, "pageId": strconv.Itoa(pageID)})
+	fmt.Println(req.URL)
+	//req = req.SetResult(openPositions)
+	resp, err := req.Get(epURL)
+	if err != nil {
+		logMsg(ERROR, "GetPortfolioPositions", "Failed to get portfolio positions", err)
+		return err
+	}
+	logMsg(INFO, "GetPortfolioPositions", resp.String())
+	return nil
+}
+
+//Tickle - Keeps the sesssion alive by tickeling the server, should be called by user application if autoTickle if off
+func (c *IBClient) Tickle() error {
+	var reply IBUser
+	var err error
+	err = c.GetEndpoint("sessionValidateSSO", &reply)
+	logMsg(INFO, "Tickle", fmt.Sprintf("%+v", reply))
+	if err != nil {
+		return err
+	}
+	if reply.Expires == 0 {
+		err = errors.New("Session Expired")
+		return err
+	}
+	return nil
+}
+
+//Logout - Logout the current session
+func (c *IBClient) Logout() error {
+	var reply IBLogout
+	var err error
+	err = c.GetEndpoint("sessionLogout", &reply)
+	logMsg(INFO, "Logout", fmt.Sprintf("%+v", reply))
+	if err != nil {
+		return err
+	}
+	return nil
 }

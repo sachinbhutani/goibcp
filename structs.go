@@ -123,3 +123,69 @@ type IBLiveOrders struct {
 		FgColor            string  `json:"fgColor"`
 	} `json:"orders"`
 }
+
+type IBPortfolioAccounts []struct {
+	ID             string `json:"id"`
+	AccountID      string `json:"accountId"`
+	AccountVan     string `json:"accountVan"`
+	AccountTitle   string `json:"accountTitle"`
+	DisplayName    string `json:"displayName"`
+	AccountAlias   string `json:"accountAlias"`
+	AccountStatus  int64  `json:"accountStatus"`
+	Currency       string `json:"currency"`
+	Type           string `json:"type"`
+	TradingType    string `json:"tradingType"`
+	Faclient       bool   `json:"faclient"`
+	ClearingStatus string `json:"clearingStatus"`
+	Parent         string `json:"parent"`
+	Desc           string `json:"desc"`
+	Covestor       bool   `json:"covestor"`
+}
+
+//IBPositions - current open positions
+type IBPortfolioPositions []struct {
+	AcctID        string   `json:"acctId"`
+	Conid         int      `json:"conid"`
+	ContractDesc  string   `json:"contractDesc"`
+	AssetClass    string   `json:"assetClass"`
+	Position      float64  `json:"position"`
+	MktPrice      float64  `json:"mktPrice"`
+	MktValue      float64  `json:"mktValue"`
+	Currency      string   `json:"currency"`
+	AvgCost       float64  `json:"avgCost"`
+	AvgPrice      float64  `json:"avgPrice"`
+	RealizedPnl   float64  `json:"realizedPnl"`
+	UnrealizedPnl float64  `json:"unrealizedPnl"`
+	Exchs         string   `json:"exchs"`
+	Expiry        string   `json:"expiry"`
+	PutOrCall     string   `json:"putOrCall"`
+	Multiplier    int      `json:"multiplier"`
+	Strike        float64  `json:"strike"`
+	ExerciseStyle string   `json:"exerciseStyle"`
+	UndConid      int      `json:"undConid"`
+	ConExchMap    []string `json:"conExchMap"`
+	Model         string   `json:"model"`
+}
+
+//IBTickle - reply recieved from server when tickled
+type IBTickle struct {
+	SsoExpires int    `json:"ssoExpires"`
+	Collission bool   `json:"collission"`
+	UserID     int    `json:"userId"`
+	Session    string `json:"session"`
+	Iserver    struct {
+		Error      string `json:"error"`
+		Tickle     bool   `json:"tickle"`
+		AuthStatus struct {
+			Authenticated bool   `json:"authenticated"`
+			Competing     bool   `json:"competing"`
+			Connected     bool   `json:"connected"`
+			Message       string `json:"message"`
+			MAC           string `json:"MAC"`
+		} `json:"authStatus"`
+	} `json:"iserver"`
+}
+
+type IBLogout struct {
+	Confirmed bool `json:"confirmed"`
+}

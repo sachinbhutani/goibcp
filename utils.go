@@ -1,7 +1,9 @@
 package goibcp
 
 import (
+	"errors"
 	"fmt"
+	"time"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -15,6 +17,8 @@ func logMsg(level int, fn string, msg string, err ...error) {
 			fmt.Println("ERROR in function", fn, ":", msg, err)
 		case 2:
 			fmt.Println("GOIBCP", fn, ":", msg)
+		case 3:
+			fmt.Println("GOIBCP Debug:", fn, msg)
 		}
 	}
 }
@@ -26,26 +30,26 @@ func (c *IBClient) GetEndpoint(endp string, res interface{}, qs ...string) error
 	if len(qs) > 0 {
 		req = rClient.R().SetResult(res).SetQueryString(qs[0])
 	} else {
-		req = rClient.R().SetResult(res)
+		req = rClient.R().SetResult(res).SetHeader("Accept", "application/json")
 	}
-	_, err := req.Get(epURL)
+	resp, err := req.Get(epURL)
 	if err != nil {
 		logMsg(ERROR, endp, "Failed to get", err)
 		return err
 	}
-	logMsg(INFO, endp, fmt.Sprintf("%+v", res))
+	logMsg(DEBUG, endp, resp.String())
 	return nil
 }
 
 //PostEndpoint - Post to an endpoint from IBCP
 func (c *IBClient) PostEndpoint(endp string, res interface{}) error {
 	epURL := Settings.CPURL + endpoints[endp]
-	_, err := rClient.R().SetResult(res).SetHeader("Content-Type", "application/json").Post(epURL)
+	resp, err := rClient.R().SetResult(res).SetHeader("Content-Type", "application/json").Post(epURL)
 	if err != nil {
 		logMsg(ERROR, endp, "Failed to post", err)
 		return err
 	}
-	logMsg(INFO, endp, fmt.Sprintf("%+v", res))
+	logMsg(DEBUG, endp, resp.String())
 	return nil
 }
 
@@ -59,6 +63,25 @@ func (c *IBClient) SessionStatus() error {
 	}
 	logMsg(INFO, "SessionStatus:", fmt.Sprintf("%+v", c))
 	return nil
+}
+
+//AutoTickle - Keeps the sesssion alive by tickeling the server every minute unless an error is encountered or session expires
+func AutoTickle(c *IBClient) error {
+	var reply IBUser
+	var err error
+	for {
+		time.Sleep(60 * time.Second)
+		err = c.GetEndpoint("sessionValidateSSO", &reply)
+		logMsg(INFO, "AutoTickle", fmt.Sprintf("%+v", reply))
+		if err != nil {
+			break
+		}
+		if reply.Expires == 0 {
+			err = errors.New("Session Expired")
+			break
+		}
+	}
+	return err
 }
 
 //TODO: create Helper methods to place simple market and limit orders for stocks and futures

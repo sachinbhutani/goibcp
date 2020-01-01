@@ -3,7 +3,7 @@ package goibcp
 var endpoints = map[string]string{
 	"sessionStatus":         "/v1/portal/iserver/auth/status",
 	"sessionReauthenticate": "/v1/portal/iserver/reauthenticate",
-	"sessionTickle ":        "/tickle",
+	"sessionTickle ":        "/v1/portal/tickle",
 	"sessionLogout":         "/v1/portal/logout",
 	"sessionValidateSSO":    "/v1/portal/sso/validate",
 	//Contracts
@@ -13,4 +13,7 @@ var endpoints = map[string]string{
 	"ordersLive": "/v1/portal/iserver/account/orders",
 	//accountSelected
 	"accountIserver": "/v1/portal/iserver/accounts",
+	//portfolio
+	"portfolioAccounts":  "/v1/portal/portfolio/accounts",
+	"portfolioPositions": "/v1/portal/portfolio/{accountId}/positions/{pageId}",
 }
