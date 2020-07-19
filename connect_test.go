@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func Test_Connection_Settings(t *testing.T) {
+func Test_AutoTickle(t *testing.T) {
 	ib, err := Connect(&Config{CPURL: "http://localhost:5000", LogLevel: 3, AutoTickle: true})
 	if err != nil {
 		t.Error("Not able to connect")
@@ -16,7 +16,7 @@ func Test_Connection_Settings(t *testing.T) {
 	time.Sleep(3 * time.Minute)
 	ib.Logout()
 }
-func Test_AutoTickle(t *testing.T) {
+func Test_Connection_Settings(t *testing.T) {
 	ib, err := Connect(&Config{CPURL: "http://localhost:5000", LogLevel: 3, AutoTickle: false})
 	if err != nil {
 		t.Error("Not able to connect")

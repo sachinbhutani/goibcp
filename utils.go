@@ -12,9 +12,9 @@ func logMsg(level int, fn string, msg string, err ...error) {
 	if level <= Settings.LogLevel {
 		switch level {
 		case 0:
-			fmt.Println("ERROR in function", fn, ":", msg, err)
+			fmt.Println("GOIBCP ERROR in function", fn, ":", msg, err)
 		case 1:
-			fmt.Println("ERROR in function", fn, ":", msg, err)
+			fmt.Println("GOBICP ERROR in function", fn, ":", msg, err)
 		case 2:
 			fmt.Println("GOIBCP", fn, ":", msg)
 		case 3:
@@ -50,18 +50,6 @@ func (c *IBClient) PostEndpoint(endp string, res interface{}) error {
 		return err
 	}
 	logMsg(DEBUG, endp, resp.String())
-	return nil
-}
-
-//SessionStatus - Returns session status
-func (c *IBClient) SessionStatus() error {
-	statusURL := Settings.CPURL + endpoints["sessionStatus"]
-	_, err := rClient.R().SetResult(c).Get(statusURL)
-	if err != nil {
-		logMsg(ERROR, "SessionStatus", "Error getting session status", err)
-		return err
-	}
-	logMsg(INFO, "SessionStatus:", fmt.Sprintf("%+v", c))
 	return nil
 }
 

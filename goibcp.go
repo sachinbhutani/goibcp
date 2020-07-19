@@ -10,7 +10,7 @@ import (
 )
 
 //Version - the version of go-ib-cp
-const Version = "0.0.1"
+const Version = "0.0.2"
 
 //ERROR, WARNING or INFO constants for Log Levels
 const (
@@ -93,13 +93,6 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 	}
 	fmt.Printf("GOIBCP Client: %+v", Client)
 	return &Client, nil
-}
-
-//trickle the server every minute to keep the session alive
-//this function is not exported but called internally every minute
-func (c *IBClient) trickle() {
-	fmt.Println("Trickling...")
-
 }
 
 //PlaceOrder - posts and order
@@ -203,5 +196,27 @@ func (c *IBClient) Logout() error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+//Reauthenticate - Reauthenticate existing client
+func (c *IBClient) Reauthenticate() error {
+	err := Client.PostEndpoint("sessionReauthenticate", &IBClient{})
+	if err != nil {
+		logMsg(ERROR, "Reauthenticate", "Not able to re-authenticate with the gateway..quitting now")
+		return err
+	}
+	return nil
+}
+
+//SessionStatus - Returns session status
+func (c *IBClient) SessionStatus() error {
+	statusURL := Settings.CPURL + endpoints["sessionStatus"]
+	_, err := rClient.R().SetResult(c).Get(statusURL)
+	if err != nil {
+		logMsg(ERROR, "SessionStatus", "Error getting session status", err)
+		return err
+	}
+	logMsg(INFO, "SessionStatus:", fmt.Sprintf("%+v", c))
 	return nil
 }

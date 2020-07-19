@@ -6,14 +6,14 @@ Go lang wrapper for interactive brokers Client Portal (CP) web gateway
 
 ## Usage Example 
     TODO
-    
+
 # Coverage 
 ### Session
 - [X] Tickle
 - [x] Logout
 - [x] Validate SSO
 - [x] Authentication Status
-- [ ] Reauthenticate
+- [X] Reauthenticate
 ### IBCust
 - [ ] Entity Info
 ### Portfolio Analyst
