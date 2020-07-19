@@ -10,7 +10,7 @@ import (
 )
 
 //Version - the version of go-ib-cp
-const Version = "0.0.2"
+const Version = "0.0.3"
 
 //ERROR, WARNING or INFO constants for Log Levels
 const (
@@ -84,6 +84,7 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 			time.Sleep(3 * time.Second)
 			continue
 		} else {
+			//TODO: Check what happens if connect is called multiple times
 			if Settings.AutoTickle == true {
 				go AutoTickle(&Client)
 			}
@@ -218,5 +219,13 @@ func (c *IBClient) SessionStatus() error {
 		return err
 	}
 	logMsg(INFO, "SessionStatus:", fmt.Sprintf("%+v", c))
+	return nil
+}
+
+//GetSessionInfo - Returns information about the current login session
+func (c *IBClient) GetSessionInfo() error {
+	if err := Client.GetEndpoint("sessionValidateSSO", &User); err != nil {
+		return err
+	}
 	return nil
 }
