@@ -224,7 +224,8 @@ func (c *IBClient) SessionStatus() error {
 
 //GetSessionInfo - Returns information about the current login session
 func (c *IBClient) GetSessionInfo(user *IBUser) error {
-	if err := Client.GetEndpoint("sessionValidateSSO", user); err != nil {
+	err := Client.GetEndpoint("sessionValidateSSO", user)
+	if err != nil {
 		return err
 	}
 	return nil
