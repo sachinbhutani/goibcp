@@ -174,15 +174,15 @@ func (c *IBClient) GetPortfolioPositions(openPositions *IBPortfolioPositions, pa
 
 //Tickle - Keeps the sesssion alive by tickeling the server, should be called by user application if autoTickle if off
 func (c *IBClient) Tickle() error {
-	var reply IBUser
+	var treply IBTickle
 	var err error
-	err = c.GetEndpoint("sessionValidateSSO", &reply)
-	logMsg(INFO, "Tickle", fmt.Sprintf("%+v", reply))
+	err = c.GetEndpoint("sessionTickle", &treply)
+	logMsg(INFO, "Tickle", fmt.Sprintf("%+v", treply))
 	if err != nil {
 		return err
 	}
-	if reply.Expires == 0 {
-		err = errors.New("Session Expired")
+	if treply.Iserver.AuthStatus.Connected == false || treply.Iserver.AuthStatus.Authenticated == false {
+		err = errors.New("IB Session disconnected")
 		return err
 	}
 	return nil

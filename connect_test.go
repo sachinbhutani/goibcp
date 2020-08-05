@@ -23,9 +23,13 @@ func Test_Connection_Settings(t *testing.T) {
 	} else {
 		fmt.Printf("IB Client: %+v \n", ib)
 	}
-	for i := 0; i < 3; i++ {
+	var user IBUser
+	ib.GetSessionInfo(&user)
+	fmt.Println(&user)
+	for i := 0; i < 2; i++ {
 		time.Sleep(60 * time.Second)
 		err = ib.Tickle()
 	}
+
 	fmt.Printf("End connection test")
 }

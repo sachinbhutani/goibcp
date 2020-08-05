@@ -66,7 +66,7 @@ Go lang wrapper for interactive brokers Client Portal (CP) web gateway
 - [ ] get lists of available scanners
 - [ ] get lists of available scanners
 ### PnL
-- [X] PnL for the selected account
+- [ ] PnL for the selected account
 
 
 # FAQs

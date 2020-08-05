@@ -1,9 +1,10 @@
 package goibcp
 
 var endpoints = map[string]string{
+	//session endpoints
 	"sessionStatus":         "/v1/portal/iserver/auth/status",
-	"sessionReauthenticate": "/v1/portal/iserver/reauthenticate",
-	"sessionTickle ":        "/v1/portal/tickle",
+	"sessionReauthenticate": "/v1/portal/iserver/reauthenticate?force=true",
+	"sessionTickle":         "/v1/portal/tickle",
 	"sessionLogout":         "/v1/portal/logout",
 	"sessionValidateSSO":    "/v1/portal/sso/validate",
 	//Contracts

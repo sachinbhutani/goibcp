@@ -55,17 +55,17 @@ func (c *IBClient) PostEndpoint(endp string, res interface{}) error {
 
 //AutoTickle - Keeps the sesssion alive by tickeling the server every minute unless an error is encountered or session expires
 func AutoTickle(c *IBClient) error {
-	var reply IBUser
+	var treply IBTickle
 	var err error
 	for {
 		time.Sleep(60 * time.Second)
-		err = c.GetEndpoint("sessionValidateSSO", &reply)
-		logMsg(INFO, "AutoTickle", fmt.Sprintf("%+v", reply))
+		err = c.GetEndpoint("sessionTickle", &treply)
+		logMsg(INFO, "AutoTickle", fmt.Sprintf("%+v", treply))
 		if err != nil {
 			break
 		}
-		if reply.Expires == 0 {
-			err = errors.New("Session Expired")
+		if treply.Iserver.AuthStatus.Connected == false || treply.Iserver.AuthStatus.Authenticated == false {
+			err = errors.New("IB Session disconnected")
 			break
 		}
 	}
