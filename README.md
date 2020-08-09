@@ -63,7 +63,7 @@ Go lang wrapper for interactive brokers Client Portal (CP) web gateway
 - [X] Security Futures by Symbol
 ### Scanner 
 - [ ] get lists of available scanners
-- [ ] get lists of available scanners
+- [ ] run scanner
 ### PnL
 - [ ] PnL for the selected account
 
