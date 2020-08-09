@@ -49,7 +49,7 @@ func Test_Get_Live_Orders(t *testing.T) {
 	fmt.Printf("%+v", liveOrders.Orders)
 }
 
-func Test_Get_Open_Positons(t *testing.T) {
+func Test_Get_Open_Positions(t *testing.T) {
 	var openPositions IBPortfolioPositions
 	ib, err := Connect(&Config{CPURL: "http://localhost:5000", LogLevel: 2})
 	if err != nil {
@@ -58,4 +58,29 @@ func Test_Get_Open_Positons(t *testing.T) {
 	}
 	ib.GetPortfolioPositions(&openPositions, 0)
 	fmt.Printf("%+v", openPositions)
+}
+
+func Test_Get_Trades_List(t *testing.T) {
+	var trades IBTrades
+	var iserverAccount IBTradeAccount
+	ib, err := Connect(&Config{CPURL: "http://localhost:5000", LogLevel: 2})
+	if err != nil {
+		t.Error("Not able to connect")
+		return
+	}
+	ib.GetTradeAccount(&iserverAccount)
+	fmt.Println("Selected account:", iserverAccount.SelectedAccount)
+	ib.GetTrades(&trades)
+	fmt.Printf("%+v", trades)
+}
+
+func Test_Get_Account_Ledger(t *testing.T) {
+	var ledger IBAccountLedger
+	ib, err := Connect(&Config{CPURL: "http://localhost:5000", LogLevel: 2})
+	if err != nil {
+		t.Error("Not able to connect")
+		return
+	}
+	ib.GetAccountLedger(&ledger)
+	fmt.Printf("%+v", ledger)
 }

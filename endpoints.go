@@ -15,6 +15,9 @@ var endpoints = map[string]string{
 	//accountSelected
 	"accountIserver": "/v1/portal/iserver/accounts",
 	//portfolio
-	"portfolioAccounts":  "/v1/portal/portfolio/accounts",
-	"portfolioPositions": "/v1/portal/portfolio/{accountId}/positions/{pageId}",
+	"portfolioAccounts":      "/v1/portal/portfolio/accounts",
+	"portfolioPositions":     "/v1/portal/portfolio/{accountId}/positions/{pageId}",
+	"portfolioAccountLedger": "/v1/portal/portfolio/{accountId}/ledger",
+	//Trades
+	"trades": "/v1/portal/iserver/account/trades",
 }

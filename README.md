@@ -24,7 +24,7 @@ Go lang wrapper for interactive brokers Client Portal (CP) web gateway
 - [ ] List of Subaccounts 
 - [ ] Account Information
 - [ ] Account Summary 
-- [ ] Account Ledger
+- [X] Account Ledger
 - [X] Brokerage Accounts
 - [ ] Update Selected Account
 - [ ] PnL for selected Account 
@@ -37,10 +37,10 @@ Go lang wrapper for interactive brokers Client Portal (CP) web gateway
 - [ ] Position by conid per account
 - [ ] Invalidate Cache
 - [ ] Account Summary
-- [ ] Account Ledger
+- [X] Account Ledger
 - [ ] Position by conid 
 ### Trades
-- [ ] List of Trades
+- [X] List of Trades
 ### Order 
 - [X] Live Order 
 - [X] Place Order 
@@ -60,8 +60,7 @@ Go lang wrapper for interactive brokers Client Portal (CP) web gateway
 - [ ] Get strikes for options/warrants
 - [ ] Get available conids of future/option/warrant/cash/CFD
 - [ ] Secdef by Conid
-- [ ] Security Futures by Symbol
-- [ ] Security Futures by Symbol
+- [X] Security Futures by Symbol
 ### Scanner 
 - [ ] get lists of available scanners
 - [ ] get lists of available scanners

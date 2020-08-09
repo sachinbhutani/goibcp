@@ -124,6 +124,7 @@ type IBLiveOrders struct {
 	} `json:"orders"`
 }
 
+//IBPortfolioAccounts - Accounts
 type IBPortfolioAccounts []struct {
 	ID             string `json:"id"`
 	AccountID      string `json:"accountId"`
@@ -186,6 +187,66 @@ type IBTickle struct {
 	} `json:"iserver"`
 }
 
+//IBTrades - array of trades from trades endpoint
+type IBTrades []struct {
+	ExecutionID          string  `json:"execution_id"`
+	Symbol               string  `json:"symbol"`
+	Side                 string  `json:"side"`
+	OrderDescription     string  `json:"order_description"`
+	TradeTime            string  `json:"trade_time"`
+	TradeTimeR           int64   `json:"trade_time_r"`
+	Size                 float64 `json:"size"`
+	Price                string  `json:"price"`
+	Submitter            string  `json:"submitter"`
+	Exchange             string  `json:"exchange"`
+	Comission            string  `json:"comission"`
+	NetAmount            float64 `json:"net_amount"`
+	Account              string  `json:"account"`
+	CompanyName          string  `json:"company_name"`
+	ContractDescription1 string  `json:"contract_description_1"`
+	SecType              string  `json:"sec_type"`
+	Conidex              string  `json:"conidex"`
+	Position             string  `json:"position"`
+	ClearingID           string  `json:"clearing_id"`
+	ClearingName         string  `json:"clearing_name"`
+	OrderRef             string  `json:"order_ref"`
+}
+
+//IBLogout - struct for information recieved with logout endpoint
 type IBLogout struct {
 	Confirmed bool `json:"confirmed"`
+}
+
+//IBAccountLedger - account ledger in base currency
+type IBAccountLedger struct {
+	BASE struct {
+		Commoditymarketvalue      float64 `json:"commoditymarketvalue"`
+		Futuremarketvalue         float64 `json:"futuremarketvalue"`
+		Settledcash               float64 `json:"settledcash"`
+		Exchangerate              int64   `json:"exchangerate"`
+		Sessionid                 int64   `json:"sessionid"`
+		Cashbalance               float64 `json:"cashbalance"`
+		Corporatebondsmarketvalue float64 `json:"corporatebondsmarketvalue"`
+		Warrantsmarketvalue       float64 `json:"warrantsmarketvalue"`
+		Netliquidationvalue       float64 `json:"netliquidationvalue"`
+		Interest                  int64   `json:"interest"`
+		Unrealizedpnl             float64 `json:"unrealizedpnl"`
+		Stockmarketvalue          float64 `json:"stockmarketvalue"`
+		Moneyfunds                float64 `json:"moneyfunds"`
+		Currency                  string  `json:"currency"`
+		Realizedpnl               float64 `json:"realizedpnl"`
+		Funds                     float64 `json:"funds"`
+		Acctcode                  string  `json:"acctcode"`
+		Issueroptionsmarketvalue  float64 `json:"issueroptionsmarketvalue"`
+		Key                       string  `json:"key"`
+		Timestamp                 int64   `json:"timestamp"`
+		Severity                  int64   `json:"severity"`
+		Stockoptionmarketvalue    float64 `json:"stockoptionmarketvalue"`
+		Tbondsmarketvalue         float64 `json:"tbondsmarketvalue"`
+		Futureoptionmarketvalue   float64 `json:"futureoptionmarketvalue"`
+		Cashbalancefxsegment      float64 `json:"cashbalancefxsegment"`
+		Secondkey                 string  `json:"secondkey"`
+		Tbillsmarketvalue         float64 `json:"tbillsmarketvalue"`
+		Dividends                 float64 `json:"dividends"`
+	} `json:"BASE"`
 }

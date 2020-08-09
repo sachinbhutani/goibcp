@@ -230,3 +230,34 @@ func (c *IBClient) GetSessionInfo(user *IBUser) error {
 	}
 	return nil
 }
+
+//GetTrades - Returns a list of trades for the currently selected account for current day and six previous days.
+//portfolioAccounts endpoint must be called for the session before calling this endpoint by user application
+//function GetSelectedAccount can be used for this purpose
+func (c *IBClient) GetTrades(trades *IBTrades) error {
+	err := Client.GetEndpoint("trades", trades)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//GetAccountLedger - Information regarding settled cash, cash balances, etc. in the account's base currency and any other cash balances held in other currencies
+//https://interactivebrokers.com/api/doc.html#tag/Portfolio/paths/~1portfolio~1{accountId}~1summary/get
+func (c *IBClient) GetAccountLedger(ledger *IBAccountLedger) error {
+	accountID, err := c.GetSelectedAccount()
+	if err != nil {
+		logMsg(ERROR, "GetAccountLeder", "Could not get selected trade account ", err)
+		return err
+	}
+	epURL := Settings.CPURL + endpoints["portfolioAccountLedger"]
+	req := rClient.R().SetPathParams(map[string]string{"accountId": accountID})
+	req = req.SetResult(ledger)
+	resp, err := req.Get(epURL)
+	if err != nil {
+		logMsg(ERROR, "GetAccountLedger", "Failed to get account ledger", err)
+		return err
+	}
+	logMsg(INFO, "GetAccountLedger", resp.String())
+	return nil
+}
