@@ -244,9 +244,10 @@ func (c *IBClient) GetTrades(trades *IBTrades) error {
 //GetAccountLedger - Information regarding settled cash, cash balances, etc. in the account's base currency and any other cash balances held in other currencies
 //https://interactivebrokers.com/api/doc.html#tag/Portfolio/paths/~1portfolio~1{accountId}~1summary/get
 func (c *IBClient) GetAccountLedger(ledger *IBAccountLedger) error {
-	accountID, err := c.GetSelectedAccount()
+	//accountID, err := c.GetSelectedAccount()
+	accountID, err := c.GetPortfolioAccount()
 	if err != nil {
-		logMsg(ERROR, "GetAccountLeder", "Could not get selected trade account ", err)
+		logMsg(ERROR, "GetAccountLedger", "Could not get selected trade account ", err)
 		return err
 	}
 	epURL := Settings.CPURL + endpoints["portfolioAccountLedger"]
