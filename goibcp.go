@@ -232,7 +232,7 @@ func (c *IBClient) GetSessionInfo(user *IBUser) error {
 
 //GetTrades - Returns a list of trades for the currently selected account for current day and six previous days.
 //portfolioAccounts endpoint must be called for the session before calling this endpoint by user application
-//function GetSelectedAccount can be used for this purpose
+//function GetPortfolioAccount can be used for this purpose
 func (c *IBClient) GetTrades(trades *IBTrades) error {
 	err := Client.GetEndpoint("trades", trades)
 	if err != nil {
