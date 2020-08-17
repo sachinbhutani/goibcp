@@ -212,10 +212,18 @@ func (c *IBClient) Reauthenticate() error {
 //SessionStatus - Returns session status
 func (c *IBClient) SessionStatus() error {
 	statusURL := Settings.CPURL + endpoints["sessionStatus"]
-	_, err := rClient.R().SetResult(c).Get(statusURL)
+	resp, err := rClient.R().SetResult(c).Get(statusURL)
 	if err != nil {
 		logMsg(ERROR, "SessionStatus", "Error getting session status", err)
 		return err
+	}
+	if resp.StatusCode() != 200 {
+		c.IsConnected = false
+		c.IsAuthenticated = false
+		c.IsCompeting = false
+		c.Message = "Not connected"
+		logMsg(ERROR, "SessionStatus", "Not Connected", err)
+		return nil
 	}
 	logMsg(INFO, "SessionStatus:", fmt.Sprintf("%+v", c))
 	return nil
