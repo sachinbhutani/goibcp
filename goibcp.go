@@ -143,7 +143,7 @@ func (c *IBClient) GetSelectedAccount() (string, error) {
 func (c *IBClient) GetPortfolioAccount() (string, error) {
 	var portfolioAccounts IBPortfolioAccounts
 	err := c.GetEndpoint("portfolioAccounts", &portfolioAccounts)
-	if err != nil {
+	if err != nil || len(portfolioAccounts) == 0 {
 		logMsg(ERROR, "GetPortfolioAccount", "Could not get portfolio account ", err)
 		return "", err
 	}
