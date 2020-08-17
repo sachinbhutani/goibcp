@@ -64,7 +64,7 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 	}
 	//Get client authentication status, if client is not authenticate, attemp to re-authenticate 1 time.
 	for i := 0; i < 2; i++ {
-		err = Client.SessionStatus()
+		err = (&Client).SessionStatus()
 		if err != nil {
 			logMsg(ERROR, "Connect", "Failed to validate SSO", err)
 			return &Client, err
