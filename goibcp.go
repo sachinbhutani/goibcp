@@ -189,10 +189,9 @@ func (c *IBClient) Tickle() error {
 }
 
 //Logout - Logout the current session
-func (c *IBClient) Logout() error {
-	var reply IBLogout
+func (c *IBClient) Logout(reply *IBLogout) error {
 	var err error
-	err = c.GetEndpoint("sessionLogout", &reply)
+	err = c.GetEndpoint("sessionLogout", reply)
 	logMsg(INFO, "Logout", fmt.Sprintf("%+v", reply))
 	if err != nil {
 		return err
