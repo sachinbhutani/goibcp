@@ -10,7 +10,7 @@ import (
 )
 
 //Version - the version of go-ib-cp
-const Version = "0.0.4"
+const Version = "0.0.5"
 
 //ERROR, WARNING or INFO constants for Log Levels
 const (
@@ -62,7 +62,7 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 		logMsg(ERROR, "Connect", "Failed to validate SSO", err)
 		return &Client, err
 	}
-	//Get client authentication status, if client is not authenticate, attemp to re-authenticate 1 time.
+	//Get client authentication status, if client is not authenticate, attemp to re-authenticate and check again in 1 minute
 	for i := 0; i < 2; i++ {
 		err = (&Client).SessionStatus()
 		if err != nil {
@@ -70,18 +70,20 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 			return &Client, err
 		}
 		// if status is not connected, return error.
-		if Client.IsConnected == false {
-			logMsg(ERROR, "Connect", "Not connected to gateway, please login to CP web gateway again")
-			return &Client, errors.New("Not connected to gateway, please login to CP web gateway again")
-		}
+		// even connected is being returned as false when session expires
+		// if Client.IsConnected == false {
+		// 	logMsg(ERROR, "Connect", "Not connected to gateway, please login to CP web gateway again")
+		// 	return &Client, errors.New("Not connected to gateway, please login to CP web gateway again")
+		// }
 		// if status is connected, but not authenticated, try to reauthenticate once.
-		if Client.IsAuthenticated == false {
+		if Client.IsConnected == false || Client.IsAuthenticated == false {
 			err = Client.PostEndpoint("sessionReauthenticate", &IBClient{})
 			if err != nil {
 				logMsg(ERROR, "Connect", "Not able to re-authenticate with the gateway..quitting now")
 				return &Client, err
 			}
-			time.Sleep(3 * time.Second)
+			logMsg(INFO, "Connect", "Waiting for 60 seconds...to reauthenticate..")
+			time.Sleep(60 * time.Second)
 			continue
 		} else {
 			//TODO: Check what happens if connect is called multiple times
@@ -189,10 +191,11 @@ func (c *IBClient) Tickle() error {
 }
 
 //Logout - Logout the current session
-func (c *IBClient) Logout(reply *IBLogout) error {
+func (c *IBClient) Logout() error {
 	var err error
-	err = c.GetEndpoint("sessionLogout", reply)
-	logMsg(INFO, "Logout", fmt.Sprintf("%+v", reply))
+	var logoutReply *IBLogout
+	err = c.GetEndpoint("sessionLogout", logoutReply)
+	logMsg(INFO, "Logout", fmt.Sprintf("%+v", logoutReply))
 	if err != nil {
 		return err
 	}
