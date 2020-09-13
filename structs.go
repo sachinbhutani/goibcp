@@ -2,6 +2,7 @@ package goibcp
 
 //IBClient - Represents the IB API client which executes all API functions
 type IBClient struct {
+	UserID          int      `json:"userId"`
 	IsConnected     bool     `json:"connected"`
 	IsAuthenticated bool     `json:"authenticated"`
 	IsCompeting     bool     `json:"competing"`

@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-var URL = "http://localhost:5000"
+var URL = "https://localhost:5000"
 
 func Test_AutoTickle(t *testing.T) {
 	ib, err := Connect(&Config{CPURL: URL, LogLevel: 3, AutoTickle: true})
@@ -19,7 +19,7 @@ func Test_AutoTickle(t *testing.T) {
 	ib.Logout()
 }
 func Test_Connection_Settings(t *testing.T) {
-	ib, err := Connect(&Config{CPURL: URL, LogLevel: 3, AutoTickle: false})
+	ib, err := Connect(&Config{CPURL: URL, LogLevel: 2, AutoTickle: false})
 	if err != nil {
 		t.Error("Not able to connect")
 	} else {
@@ -31,6 +31,7 @@ func Test_Connection_Settings(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		time.Sleep(60 * time.Second)
 		err = ib.Tickle()
+		fmt.Printf("IB Client: %+v", ib)
 	}
 
 	fmt.Printf("End connection test")

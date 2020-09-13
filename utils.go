@@ -59,17 +59,23 @@ func AutoTickle(c *IBClient) error {
 	var err error
 	for {
 		time.Sleep(60 * time.Second)
-		err = c.PostEndpoint("sessionTickle", &treply)
+		err = c.GetEndpoint("sessionTickle", &treply)
 		logMsg(INFO, "AutoTickle", fmt.Sprintf("%+v", treply))
 		if err != nil {
-			break
+			return err
+		}
+		if treply.Iserver.Error != "" {
+			return errors.New(treply.Iserver.Error)
 		}
 		if treply.Iserver.AuthStatus.Connected == false || treply.Iserver.AuthStatus.Authenticated == false {
-			err = errors.New("IB Session disconnected")
-			break
+			return errors.New("IB Session disconnected")
 		}
+		c.UserID = treply.UserID
+		c.IsAuthenticated = treply.Iserver.AuthStatus.Authenticated
+		c.IsConnected = treply.Iserver.AuthStatus.Connected
+		c.IsCompeting = treply.Iserver.AuthStatus.Competing
+		c.Message = treply.Iserver.AuthStatus.Message
 	}
-	return err
 }
 
 //TODO: create Helper methods to place simple market and limit orders for stocks and futures

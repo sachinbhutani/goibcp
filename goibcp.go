@@ -55,14 +55,14 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 
 	}
 
-	//ValidateSSO
+	//ValidateSSO  - Get client userID
 	err := Client.GetEndpoint("sessionValidateSSO", &User)
 	if err != nil {
 		logMsg(ERROR, "Connect", "Failed to validate SSO", err)
 		return &Client, err
 	}
-	//Get client authentication status, if client is not authenticate, attemp to re-authenticate and check again in 1 minute
-	//for i := 0; i < 2; i++ {
+	Client.UserID = User.UserID
+	//check sessionStatus
 	err = (&Client).SessionStatus()
 	if err != nil {
 		logMsg(ERROR, "Connect", "Failed to validate SSO", err)
@@ -186,6 +186,11 @@ func (c *IBClient) Tickle() error {
 		err = errors.New("IB Session disconnected")
 		return err
 	}
+	c.UserID = treply.UserID
+	c.IsAuthenticated = treply.Iserver.AuthStatus.Authenticated
+	c.IsConnected = treply.Iserver.AuthStatus.Connected
+	c.IsCompeting = treply.Iserver.AuthStatus.Competing
+	c.Message = treply.Iserver.AuthStatus.Message
 	return nil
 }
 
