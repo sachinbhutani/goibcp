@@ -4,13 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/go-resty/resty/v2"
 )
 
 //Version - the version of go-ib-cp
-const Version = "0.0.5"
+const Version = "0.0.6"
 
 //ERROR, WARNING or INFO constants for Log Levels
 const (
@@ -63,39 +62,39 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 		return &Client, err
 	}
 	//Get client authentication status, if client is not authenticate, attemp to re-authenticate and check again in 1 minute
-	for i := 0; i < 2; i++ {
-		err = (&Client).SessionStatus()
-		if err != nil {
-			logMsg(ERROR, "Connect", "Failed to validate SSO", err)
-			return &Client, err
-		}
-		// if status is not connected, return error.
-		// even connected is being returned as false when session expires
-		// if Client.IsConnected == false {
-		// 	logMsg(ERROR, "Connect", "Not connected to gateway, please login to CP web gateway again")
-		// 	return &Client, errors.New("Not connected to gateway, please login to CP web gateway again")
-		// }
-		// if status is connected, but not authenticated, try to reauthenticate once.
-		if Client.IsConnected == false || Client.IsAuthenticated == false {
-			err = Client.PostEndpoint("sessionReauthenticate", &IBClient{})
-			if err != nil {
-				logMsg(ERROR, "Connect", "Not able to re-authenticate with the gateway..quitting now")
-				return &Client, err
-			}
-			logMsg(INFO, "Connect", "Waiting for 60 seconds...to reauthenticate..")
-			time.Sleep(60 * time.Second)
-			continue
-		} else {
-			//TODO: Check what happens if connect is called multiple times
-			if Settings.AutoTickle == true {
-				go AutoTickle(&Client)
-			}
-			//TODO: trigger auto tickle
-			return &Client, nil
-		}
+	//for i := 0; i < 2; i++ {
+	err = (&Client).SessionStatus()
+	if err != nil {
+		logMsg(ERROR, "Connect", "Failed to validate SSO", err)
+		return &Client, err
 	}
-	fmt.Printf("GOIBCP Client: %+v", Client)
-	return &Client, nil
+	//if status is not connected, return error.
+	//even connected is being returned as false when session expires
+	if Client.IsConnected == false {
+		logMsg(ERROR, "Connect", "Not connected to gateway, please login to CP web gateway again")
+		return &Client, errors.New("Not connected to gateway, please login to CP web gateway again")
+	}
+	//if status is connected, but not authenticated, return error to manually reauthenticate.
+	if Client.IsAuthenticated == false {
+		// err = Client.PostEndpoint("sessionReauthenticate", &IBClient{})
+		// if err != nil {
+		// 	logMsg(ERROR, "Connect", "Not able to re-authenticate with the gateway..quitting now")
+		// 	return &Client, err
+		// }
+		logMsg(INFO, "Connect", "Connected but not authenticated..please try to reauthenticate")
+		//time.Sleep(60 * time.Second)
+		return &Client, errors.New("Connected but not authenticated..please try to reconnect")
+	} else {
+		logMsg(INFO, "Connect", "Connected and Authenticated..")
+		//TODO: Check what happens if connect is called multiple times
+		if Settings.AutoTickle == true {
+			go AutoTickle(&Client)
+		}
+		return &Client, nil
+	}
+	//}
+	// fmt.Printf("GOIBCP Client: %+v", Client)
+	// return &Client, nil
 }
 
 //PlaceOrder - posts and order

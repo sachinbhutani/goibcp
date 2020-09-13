@@ -59,7 +59,7 @@ func AutoTickle(c *IBClient) error {
 	var err error
 	for {
 		time.Sleep(60 * time.Second)
-		err = c.GetEndpoint("sessionTickle", &treply)
+		err = c.PostEndpoint("sessionTickle", &treply)
 		logMsg(INFO, "AutoTickle", fmt.Sprintf("%+v", treply))
 		if err != nil {
 			break
