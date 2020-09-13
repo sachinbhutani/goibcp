@@ -9,7 +9,7 @@ import (
 )
 
 //Version - the version of go-ib-cp
-const Version = "0.0.6"
+const Version = "0.0.7"
 
 //ERROR, WARNING or INFO constants for Log Levels
 const (
