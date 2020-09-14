@@ -9,7 +9,7 @@ import (
 )
 
 //Version - the version of go-ib-cp
-const Version = "0.0.7"
+const Version = "0.0.8"
 
 //ERROR, WARNING or INFO constants for Log Levels
 const (
@@ -39,7 +39,7 @@ var rClient = resty.New()
 
 //Connect to CP Web gateway.
 //Returns a ib api client if successful or an error if connection is not established.
-//If a session is established, auto-trickle function would be triggered to keep the session active using trciker api every minute.
+//If a session is established, auto-tickle function would be triggered to keep the session active using tickle api every minute.
 func Connect(userSettings ...*Config) (*IBClient, error) {
 	//Overwrite default settings if settings are provided.
 	if len(userSettings) > 0 {
@@ -76,25 +76,15 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 	}
 	//if status is connected, but not authenticated, return error to manually reauthenticate.
 	if Client.IsAuthenticated == false {
-		// err = Client.PostEndpoint("sessionReauthenticate", &IBClient{})
-		// if err != nil {
-		// 	logMsg(ERROR, "Connect", "Not able to re-authenticate with the gateway..quitting now")
-		// 	return &Client, err
-		// }
 		logMsg(INFO, "Connect", "Connected but not authenticated..please try to reauthenticate")
-		//time.Sleep(60 * time.Second)
 		return &Client, errors.New("Connected but not authenticated..please try to reconnect")
-	} else {
-		logMsg(INFO, "Connect", "Connected and Authenticated..")
-		//TODO: Check what happens if connect is called multiple times
-		if Settings.AutoTickle == true {
-			go AutoTickle(&Client)
-		}
-		return &Client, nil
 	}
-	//}
-	// fmt.Printf("GOIBCP Client: %+v", Client)
-	// return &Client, nil
+	logMsg(INFO, "Connect", "Connected and Authenticated..")
+	//TODO: Check what happens if connect is called multiple times
+	if Settings.AutoTickle == true {
+		go AutoTickle(&Client)
+	}
+	return &Client, nil
 }
 
 //PlaceOrder - posts and order
