@@ -65,6 +65,11 @@ func AutoTickle(c *IBClient) error {
 			return err
 		}
 		if treply.Iserver.Error != "" {
+			//try to reconnect if "no bridge error is recieved"
+			if treply.Iserver.Error == "no bridge" {
+				logMsg(ERROR, "AutoTickle", "No Bridge error on Tickle..trying to reconnect")
+				go Connect()
+			}
 			return errors.New(treply.Iserver.Error)
 		}
 		if treply.Iserver.AuthStatus.Connected == false || treply.Iserver.AuthStatus.Authenticated == false {
