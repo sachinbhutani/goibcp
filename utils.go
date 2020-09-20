@@ -58,8 +58,10 @@ func AutoTickle(c *IBClient) error {
 	var treply IBTickle
 	var err error
 	for {
-		time.Sleep(60 * time.Second)
+		time.Sleep(3 * time.Minute)
 		err = c.GetEndpoint("sessionTickle", &treply)
+		var l = IBAccountLedger{}
+		c.GetAccountLedger(&l)
 		logMsg(INFO, "AutoTickle", fmt.Sprintf("%+v", treply))
 		if err != nil {
 			return err

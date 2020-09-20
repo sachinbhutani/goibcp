@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-var URL = "https://localhost:5000"
+var URL = "https://ib.froogle.in"
 
 func Test_AutoTickle(t *testing.T) {
 	ib, err := Connect(&Config{CPURL: URL, LogLevel: 3, AutoTickle: true})
