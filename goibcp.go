@@ -52,7 +52,6 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 		if userSettings[0].AutoTickle == false { // default is true, but if user provides false the set autotickle to false.
 			Settings.AutoTickle = userSettings[0].AutoTickle
 		}
-
 	}
 
 	//ValidateSSO  - Get client userID

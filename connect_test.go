@@ -6,10 +6,10 @@ import (
 	"time"
 )
 
-var URL = "https://ib.froogle.in"
+var URL = "https://localhost:5000"
 
 func Test_AutoTickle(t *testing.T) {
-	ib, err := Connect(&Config{CPURL: URL, LogLevel: 3, AutoTickle: true})
+	ib, err := Connect(&Config{CPURL: URL, LogLevel: 2, AutoTickle: true})
 	if err != nil {
 		t.Error("Not able to connect")
 	} else {

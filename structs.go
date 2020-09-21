@@ -11,6 +11,20 @@ type IBClient struct {
 	Prompts         []string `json:"prompts"`
 }
 
+//IBSSOValidate - reply from sso/validate URL
+type IBSSOValidate struct {
+	USERID        int    `json:"USER_ID"`
+	USERNAME      string `json:"USER_NAME"`
+	RESULT        bool   `json:"RESULT"`
+	SFENABLED     bool   `json:"SF_ENABLED"`
+	ISFREETRIAL   bool   `json:"IS_FREE_TRIAL"`
+	IP            string `json:"IP"`
+	EXPIRES       int    `json:"EXPIRES"`
+	LastAccessed  int64  `json:"lastAccessed"`
+	LoginType     int    `json:"loginType"`
+	PAPERUSERNAME string `json:"PAPER_USER_NAME"`
+}
+
 //IBUser -Represents the IB user currently logged in
 type IBUser struct {
 	PaperUsername      string `json:"PAPER_USER_NAME"`
