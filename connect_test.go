@@ -9,7 +9,7 @@ import (
 var URL = "https://localhost:5000"
 
 func Test_AutoTickle(t *testing.T) {
-	ib, err := Connect(&Config{CPURL: URL, LogLevel: 2, AutoTickle: true})
+	ib, err := Connect(&Config{CPURL: URL, LogLevel: 2, KeepAlive: true})
 	if err != nil {
 		t.Error("Not able to connect")
 	} else {
@@ -19,13 +19,13 @@ func Test_AutoTickle(t *testing.T) {
 	ib.Logout()
 }
 func Test_Connection_Settings(t *testing.T) {
-	ib, err := Connect(&Config{CPURL: URL, LogLevel: 2, AutoTickle: false})
+	ib, err := Connect(&Config{CPURL: URL, LogLevel: 2, KeepAlive: false})
 	if err != nil {
 		t.Error("Not able to connect")
 	} else {
 		fmt.Printf("IB Client: %+v \n", ib)
 	}
-	var user IBUser
+	var user IBSession
 	ib.GetSessionInfo(&user)
 	fmt.Println(&user)
 	for i := 0; i < 2; i++ {

@@ -24,10 +24,6 @@ func Test_Futures_Trade(t *testing.T) {
 	if err != nil {
 		t.Error("error getting contracts")
 	}
-	//TODO: Replace with asset function , assert the symbol and underlying contract id as date and current contract can change
-	//TODO: also asset the expiration date is not 0
-
-	//mnq := contracts["MNQ"][0]
 	fmt.Printf("All Contracts Found: \n %+v \n", contracts)
 	mnq, err := GetCurrentContract(contracts, "MNQ")
 	if err != nil {
@@ -54,7 +50,6 @@ func GetCurrentContract(conList IBFutContractList, ticker string) (IBFutContract
 			return k, err
 		}
 		td := expDate.AddDate(0, 0, -7)
-		fmt.Println("Expiry Date: ", expDate, "Test Date: ", td)
 		if td.After(today) {
 			return k, nil
 		}

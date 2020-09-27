@@ -1,7 +1,6 @@
 package goibcp
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -53,39 +52,41 @@ func (c *IBClient) PostEndpoint(endp string, res interface{}) error {
 	return nil
 }
 
-//AutoTickle - Keeps the sesssion alive by tickeling the server every minute unless an error is encountered or session expires
-func AutoTickle(c *IBClient) error {
+//KeepAlive - Keeps the sesssion alive by tickeling the server every minute unless an error is encountered or session expires
+//reauthorize session on nobridge error
+func KeepAlive(c *IBClient) error {
 	var treply = IBTickle{}
-	var ssoValidateReply = IBSSOValidate{}
+	var sessionInfo = IBSession{}
 	var err error
 	for {
-		time.Sleep(1 * time.Minute)
-		err = c.GetEndpoint("sessionValidateSSO", &ssoValidateReply)
-		if err != nil || ssoValidateReply.USERID == 0 {
-			logMsg(ERROR, "AutoTickle", "Could not validate SSO")
+		time.Sleep(55 * time.Second)
+		err = c.GetSessionInfo(&sessionInfo)
+		if err != nil {
+			logMsg(ERROR, "KeepAlive", "No Active Session found")
 			return err
 		}
-		logMsg(INFO, "AutoTickle", fmt.Sprintf("%+v", ssoValidateReply))
+		fmt.Printf("%+v\n", sessionInfo)
+		time.Sleep(5 * time.Second)
 		err = c.GetEndpoint("sessionTickle", &treply)
 		// var l = IBAccountLedger{}
 		// c.GetAccountLedger(&l)
-		// logMsg(INFO, "AutoTickle", fmt.Sprintf("%+v", treply))
+		logMsg(INFO, "KeepAlive", fmt.Sprintf("%+v", treply))
 		if err != nil {
-			logMsg(ERROR, "AutoTickle", "Could not Tickle")
-			return err
+			logMsg(ERROR, "KeepAlive", "Error on tickle, Reauthenticating as session is still valid")
+			c.Reauthenticate()
 		}
 		if treply.Iserver.Error != "" {
 			//try to reconnect if "no bridge error is recieved"
 			if treply.Iserver.Error == "no bridge" {
-				logMsg(ERROR, "AutoTickle", "No Bridge error on Tickle..trying to reconnect")
-				go Connect()
+				logMsg(ERROR, "KeepAlive", "No Bridge error on Tickle..trying to rauthenticate")
+				c.Reauthenticate()
 			}
-			return errors.New(treply.Iserver.Error)
+			//return errors.New(treply.Iserver.Error)
 		}
-		if treply.Iserver.AuthStatus.Connected == false || treply.Iserver.AuthStatus.Authenticated == false {
-			return errors.New("IB Session disconnected")
-		}
-		c.UserID = treply.UserID
+		// if treply.Iserver.AuthStatus.Connected == false || treply.Iserver.AuthStatus.Authenticated == false {
+		// 	return errors.New("IB Session disconnected")
+		// }
+		c.UserID = sessionInfo.UserID
 		c.IsAuthenticated = treply.Iserver.AuthStatus.Authenticated
 		c.IsConnected = treply.Iserver.AuthStatus.Connected
 		c.IsCompeting = treply.Iserver.AuthStatus.Competing

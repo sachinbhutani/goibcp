@@ -22,19 +22,19 @@ const (
 //Config to connect to CP Web gateway
 //LogInfo 0=> Log Errors only , 1=> log warnings, 2=> log information (default)
 type Config struct {
-	CPURL      string
-	LogLevel   int
-	AutoTickle bool
+	CPURL     string
+	LogLevel  int
+	KeepAlive bool
 }
 
 //Settings - Default settings if no setting are provided to the Connect() function.
-var Settings = &Config{CPURL: "https://localhost:5000", LogLevel: 2, AutoTickle: true}
+var Settings = &Config{CPURL: "https://localhost:5000", LogLevel: 2, KeepAlive: true}
 
 //Client - IB Client which can be used to call all api functions
 var Client IBClient
 
-//User - IBUser
-var User IBUser
+//Session - IBSession
+var Session IBSession
 var rClient = resty.New()
 
 //Connect to CP Web gateway.
@@ -49,39 +49,49 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 		if userSettings[0].LogLevel != 2 {
 			Settings.LogLevel = userSettings[0].LogLevel
 		}
-		if userSettings[0].AutoTickle == false { // default is true, but if user provides false the set autotickle to false.
-			Settings.AutoTickle = userSettings[0].AutoTickle
+		if userSettings[0].KeepAlive == false { // default is true, but if user provides false the set KeepAlive to false.
+			Settings.KeepAlive = userSettings[0].KeepAlive
 		}
 	}
 
 	//ValidateSSO  - Get client userID
-	err := Client.GetEndpoint("sessionValidateSSO", &User)
+	err := Client.GetSessionInfo(&Session)
 	if err != nil {
-		logMsg(ERROR, "Connect", "Failed to validate SSO", err)
+		logMsg(ERROR, "Connect", "Failed to validate Session SSO, please login to CP web gateway again", err)
 		return &Client, err
 	}
-	Client.UserID = User.UserID
-	//check sessionStatus
-	err = (&Client).SessionStatus()
+	Client.UserID = Session.UserID
+	if Client.UserID == 0 {
+		err = errors.New("No session found")
+		logMsg(ERROR, "Connect", "Failed to validate Session SSO, please login to CP web gateway again", err)
+		return &Client, err
+	}
+	//check iServer Session Status
+	// in there's a valid user session but iServer status returns error then try to reauthenticate.
+	err = (&Client).GetSessionStatus()
 	if err != nil {
-		logMsg(ERROR, "Connect", "Failed to validate SSO", err)
+		(&Client).Reauthenticate()
+		logMsg(ERROR, "Connect", "Session status error, trying to reauthenticate, check back in one minute", err)
 		return &Client, err
 	}
 	//if status is not connected, return error.
 	//even connected is being returned as false when session expires
-	if Client.IsConnected == false {
-		logMsg(ERROR, "Connect", "Not connected to gateway, please login to CP web gateway again")
-		return &Client, errors.New("Not connected to gateway, please login to CP web gateway again")
+	if Client.IsConnected == false || Client.IsAuthenticated == false {
+		err = errors.New("iServer status not connected or authenticated")
+		(&Client).Reauthenticate()
+		logMsg(ERROR, "Connect", "Trying to reauthenticate, check back in one minute", err)
+		return &Client, err
 	}
-	//if status is connected, but not authenticated, return error to manually reauthenticate.
-	if Client.IsAuthenticated == false {
-		logMsg(INFO, "Connect", "Connected but not authenticated..please try to reauthenticate")
-		return &Client, errors.New("Connected but not authenticated..please try to reconnect")
-	}
+	// //if status is connected, but not authenticated, return error to manually reauthenticate.
+	// if Client.IsAuthenticated == false {
+	// 	logMsg(INFO, "Connect", "Connected but not authenticated..please try to reauthenticate")
+	// 	return &Client, errors.New("Connected but not authenticated..please try to reconnect")
+	// }
 	logMsg(INFO, "Connect", "Connected and Authenticated..")
 	//TODO: Check what happens if connect is called multiple times
-	if Settings.AutoTickle == true {
-		go AutoTickle(&Client)
+	//TODO: send channel signal to kill existing KeepAlive
+	if Settings.KeepAlive == true {
+		go KeepAlive(&Client)
 	}
 	return &Client, nil
 }
@@ -151,8 +161,8 @@ func (c *IBClient) GetPortfolioPositions(openPositions *IBPortfolioPositions, pa
 	}
 	epURL := Settings.CPURL + endpoints["portfolioPositions"]
 	req := rClient.R().SetPathParams(map[string]string{"accountId": accountID, "pageId": strconv.Itoa(pageID)})
-	fmt.Println(req.URL)
-	//req = req.SetResult(openPositions)
+	//fmt.Println(req.URL)
+	req = req.SetResult(openPositions)
 	resp, err := req.Get(epURL)
 	if err != nil {
 		logMsg(ERROR, "GetPortfolioPositions", "Failed to get portfolio positions", err)
@@ -162,7 +172,7 @@ func (c *IBClient) GetPortfolioPositions(openPositions *IBPortfolioPositions, pa
 	return nil
 }
 
-//Tickle - Keeps the sesssion alive by tickeling the server, should be called by user application if autoTickle if off
+//Tickle - Keeps the sesssion alive by tickeling the server, should be called by user application if KeepAlive if off
 func (c *IBClient) Tickle() error {
 	var treply IBTickle
 	var err error
@@ -205,12 +215,12 @@ func (c *IBClient) Reauthenticate() error {
 	return nil
 }
 
-//SessionStatus - Returns session status
-func (c *IBClient) SessionStatus() error {
-	statusURL := Settings.CPURL + endpoints["sessionStatus"]
+//GetSessionStatus - Returns session status
+func (c *IBClient) GetSessionStatus() error {
+	statusURL := Settings.CPURL + endpoints["GetSessionStatus"]
 	resp, err := rClient.R().SetResult(c).Get(statusURL)
 	if err != nil {
-		logMsg(ERROR, "SessionStatus", "Error getting session status", err)
+		logMsg(ERROR, "GetSessionStatus", "Error getting session status", err)
 		return err
 	}
 	if resp.StatusCode() != 200 {
@@ -218,19 +228,21 @@ func (c *IBClient) SessionStatus() error {
 		c.IsAuthenticated = false
 		c.IsCompeting = false
 		c.Message = "Not connected"
-		logMsg(ERROR, "SessionStatus", "Not Connected", err)
+		logMsg(ERROR, "GetSessionStatus", "Not Connected", err)
 		return nil
 	}
-	logMsg(INFO, "SessionStatus:", fmt.Sprintf("%+v", c))
+	logMsg(INFO, "GetSessionStatus:", fmt.Sprintf("%+v", c))
 	return nil
 }
 
 //GetSessionInfo - Returns information about the current login session
-func (c *IBClient) GetSessionInfo(user *IBUser) error {
+func (c *IBClient) GetSessionInfo(user *IBSession) error {
 	err := Client.GetEndpoint("sessionValidateSSO", user)
 	if err != nil {
+		logMsg(ERROR, "SessionValidateSSO", "Error while trying to validate session", err)
 		return err
 	}
+	logMsg(INFO, "SessionValidateSSO", fmt.Sprintf("%+v", user))
 	return nil
 }
 

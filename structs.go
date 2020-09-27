@@ -25,8 +25,8 @@ type IBSSOValidate struct {
 	PAPERUSERNAME string `json:"PAPER_USER_NAME"`
 }
 
-//IBUser -Represents the IB user currently logged in
-type IBUser struct {
+//IBSession -Represents the IB user currently logged in
+type IBSession struct {
 	PaperUsername      string `json:"PAPER_USER_NAME"`
 	LoginType          int    `json:"loginType"`
 	IsPendingApplicant bool   `json:"IS_PENDING_APPLICANT"`
