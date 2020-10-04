@@ -1,6 +1,7 @@
 package goibcp
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -36,6 +37,11 @@ func (c *IBClient) GetEndpoint(endp string, res interface{}, qs ...string) error
 		logMsg(ERROR, endp, "Failed to get", err)
 		return err
 	}
+	if resp.StatusCode() != 200 {
+		err = errors.New("HTTP " + fmt.Sprintf("%d", resp.StatusCode()) + "error")
+		logMsg(ERROR, endp, "StatusCode ", err)
+		return err
+	}
 	logMsg(DEBUG, endp, resp.String())
 	return nil
 }
@@ -61,11 +67,13 @@ func KeepAlive(c *IBClient) error {
 	for {
 		time.Sleep(55 * time.Second)
 		err = c.GetSessionInfo(&sessionInfo)
+		//exit if http response is not 200 from sessionInfo endpoint.
+		//TODO: send disconnected event to a channel
 		if err != nil {
 			logMsg(ERROR, "KeepAlive", "No Active Session found")
 			return err
 		}
-		fmt.Printf("%+v\n", sessionInfo)
+		// fmt.Printf("%+v\n", sessionInfo)
 		time.Sleep(5 * time.Second)
 		err = c.GetEndpoint("sessionTickle", &treply)
 		// var l = IBAccountLedger{}
