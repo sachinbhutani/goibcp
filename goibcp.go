@@ -37,6 +37,9 @@ var Client IBClient
 var Session IBSession
 var rClient = resty.New()
 
+//KAStatus - Keep Alive status to start/stop the tickle process
+var KAStatus = false
+
 //Connect to CP Web gateway.
 //Returns a ib api client if successful or an error if connection is not established.
 //If a session is established, auto-tickle function would be triggered to keep the session active using tickle api every minute.
@@ -53,7 +56,6 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 			Settings.KeepAlive = userSettings[0].KeepAlive
 		}
 	}
-
 	//ValidateSSO  - Get client userID
 	err := Client.GetSessionInfo(&Session)
 	if err != nil {
@@ -90,7 +92,8 @@ func Connect(userSettings ...*Config) (*IBClient, error) {
 	logMsg(INFO, "Connect", "Connected and Authenticated..")
 	//TODO: Check what happens if connect is called multiple times
 	//TODO: send channel signal to kill existing KeepAlive
-	if Settings.KeepAlive == true {
+	if Settings.KeepAlive == true && KAStatus == false {
+		fmt.Println("Staring Keep Alive as it's not active right now.")
 		go KeepAlive(&Client)
 	}
 	return &Client, nil

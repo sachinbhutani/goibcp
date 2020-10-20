@@ -61,6 +61,7 @@ func (c *IBClient) PostEndpoint(endp string, res interface{}) error {
 //KeepAlive - Keeps the sesssion alive by tickeling the server every minute unless an error is encountered or session expires
 //reauthorize session on nobridge error
 func KeepAlive(c *IBClient) error {
+	KAStatus = true
 	var treply = IBTickle{}
 	var sessionInfo = IBSession{}
 	var err error
@@ -71,6 +72,7 @@ func KeepAlive(c *IBClient) error {
 		//TODO: send disconnected event to a channel
 		if err != nil {
 			logMsg(ERROR, "KeepAlive", "No Active Session found")
+			KAStatus = false
 			return err
 		}
 		// fmt.Printf("%+v\n", sessionInfo)
